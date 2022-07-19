@@ -3,6 +3,7 @@
 !**.java
 !**.txt
 !**.json
+!**.pdf
 !.expelimicate
 !.gitignore
 .class
