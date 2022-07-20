@@ -92,9 +92,8 @@ public class IntList {
 //        }
 //        return L;
         /** Recursive */
-        if (A.rest == null) {
-            A.rest = B;
-            return A;
+        if (A == null) {
+            return B;
         }
         A.rest = dcatenate(A.rest, B);
         return  A;
