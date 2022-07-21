@@ -4,8 +4,8 @@ public class ArrayDeque<T> {
     private int front, rear;
 
     public ArrayDeque() {
-        items = (T[]) new Object[8];
         capacity = 8;
+        items = (T[]) new Object[capacity];
         front = rear = 0;
     }
 
@@ -31,7 +31,7 @@ public class ArrayDeque<T> {
 
     public void addFirst(T item) {
         if (size() == capacity - 1) {
-            reSize(capacity*2);
+            reSize(capacity * 2);
         }
         front = minusOne(front);
         items[front] = item;
@@ -39,7 +39,7 @@ public class ArrayDeque<T> {
 
     public void addLast(T item) {
         if (size() == capacity - 1) {
-            reSize(capacity*2);
+            reSize(capacity * 2);
         }
         items[rear] = item;
         rear = (rear + 1) % capacity;
@@ -54,31 +54,37 @@ public class ArrayDeque<T> {
     }
 
     public void printDeque() {
-        for (int i = front; i != rear ; i = (i + 1) % capacity) {
+        for (int i = front; i != rear; i = (i + 1) % capacity) {
             System.out.print(items[i] + " ");
         }
         System.out.println();
     }
 
     public T removeFirst() {
+        if (isEmpty()) {
+            return null;
+        }
         T item = items[front];
         front = (front + 1) % capacity;
-        if (capacity < 16 && size() / capacity < 0.25) {
-            reSize(capacity/2);
+        if (capacity >= 16 && (double) size() / capacity < 0.25) {
+            reSize(capacity / 2);
         }
         return item;
     }
 
     public T removeLast() {
+        if (isEmpty()) {
+            return null;
+        }
         rear = minusOne(rear);
         T item = items[rear];
-        if (capacity < 16 && size() / capacity < 0.25) {
-            reSize(capacity/2);
+        if (capacity >= 16 && (double) size() / capacity < 0.25) {
+            reSize(capacity / 2);
         }
         return item;
     }
 
     public T get(int index) {
-        return items[(front+index)%capacity];
+        return items[(front + index) % capacity];
     }
 }
