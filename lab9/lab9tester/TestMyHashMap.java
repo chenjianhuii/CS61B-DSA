@@ -2,6 +2,7 @@ package lab9tester;
 
 import static org.junit.Assert.*;
 
+import lab9.BSTMap;
 import org.junit.Test;
 import lab9.MyHashMap;
 
@@ -125,6 +126,23 @@ public class TestMyHashMap {
         studentIDs.put("evil alan", 345);
         assertEquals(345, studentIDs.get("evil alan").intValue());
         assertEquals(studentIDs.get("evil alan"), studentIDs.get("alan"));
+    }
+
+    //assumes remove work
+    @Test
+    public void sanityRemoveTest() {
+        MyHashMap<String, Integer> b = new MyHashMap<>(1013);
+        for (int i = 0; i < 455; i++) {
+            b.put("hi" + i, 1);
+        }
+        assertEquals((Integer) 1, b.remove("hi0"));
+        assertEquals(454, b.size());
+        assertNull(b.remove("hi0"));
+        assertNull(b.remove("hi1", 2));
+        for (int i = 1; i < 455; i++) {
+            assertEquals((Integer) 1, b.remove("hi" + i));
+        }
+        assertEquals(0, b.size());
     }
 
     public static void main(String[] args) {
