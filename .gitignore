@@ -51,3 +51,4 @@ $RECYCLE.BIN/
 *.lnk
 *.idea*
 */out
+.vscode/
