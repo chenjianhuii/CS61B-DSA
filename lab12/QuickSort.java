@@ -1,3 +1,4 @@
+
 import edu.princeton.cs.algs4.Queue;
 
 public class QuickSort {
@@ -48,12 +49,47 @@ public class QuickSort {
             Queue<Item> unsorted, Item pivot,
             Queue<Item> less, Queue<Item> equal, Queue<Item> greater) {
         // Your code here!
+        for (Item item : unsorted) {
+            int cmp = item.compareTo(pivot);
+            if (cmp < 0) {
+                less.enqueue(item);
+            } else if (cmp > 0) {
+                greater.enqueue(item);
+            } else {
+                equal.enqueue(item);
+            }
+        }
     }
 
     /** Returns a Queue that contains the given items sorted from least to greatest. */
     public static <Item extends Comparable> Queue<Item> quickSort(
             Queue<Item> items) {
         // Your code here!
-        return items;
+        if (items.isEmpty()) {
+            return new Queue<>();
+        }
+        Queue<Item> less = new Queue<>();
+        Queue<Item> equal = new Queue<>();
+        Queue<Item> greater = new Queue<>();
+        Item pivot = getRandomItem(items);
+        partition(items, pivot, less, equal, greater);
+        return catenate(catenate(quickSort(less), equal), quickSort(greater));
+    }
+
+    public static void main(String[] args) {
+        Queue<String> students = new Queue<String>();
+        students.enqueue("Alice");
+        students.enqueue("Vanessa");
+        students.enqueue("Ethan");
+        students.enqueue("Bob");
+        students.enqueue("Cafe");
+        students.enqueue("Alice");
+        String expected = "Alice ALice Bob Cafe Ethan Vanessa";
+        System.out.println("Sorted queue:");
+        System.out.println(QuickSort.quickSort(students));
+        System.out.println("Expected queue:");
+        System.out.println(expected);
+        System.out.println("Original queue:");
+        System.out.println(students);
     }
 }

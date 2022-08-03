@@ -34,8 +34,16 @@ public class MergeSort {
     /** Returns a queue of queues that each contain one item from items. */
     private static <Item extends Comparable> Queue<Queue<Item>>
             makeSingleItemQueues(Queue<Item> items) {
-        // Your code here!
-        return null;
+        Queue<Queue<Item>> q = new Queue<>();
+        for (Item i : items) {
+            Queue<Item> qi = new Queue<>();
+            qi.enqueue(i);
+            q.enqueue(qi);
+        }
+        if (items.isEmpty()) {
+            q.enqueue(new Queue<>());
+        }
+        return q;
     }
 
     /**
@@ -54,13 +62,42 @@ public class MergeSort {
     private static <Item extends Comparable> Queue<Item> mergeSortedQueues(
             Queue<Item> q1, Queue<Item> q2) {
         // Your code here!
-        return null;
+        Queue<Item> mergedQueue = new Queue<>();
+        while (!(q1.isEmpty() && q2.isEmpty())) {
+            mergedQueue.enqueue(getMin(q1, q2));
+        }
+        return mergedQueue;
     }
 
     /** Returns a Queue that contains the given items sorted from least to greatest. */
     public static <Item extends Comparable> Queue<Item> mergeSort(
             Queue<Item> items) {
         // Your code here!
-        return items;
+        Queue<Queue<Item>> q = makeSingleItemQueues(items);
+        while (q.size() > 1) {
+            Queue<Item> q1 = q.dequeue();
+            Queue<Item> q2 = q.dequeue();
+            q.enqueue(mergeSortedQueues(q1, q2));
+        }
+        if (q.size() == 1) {
+            return q.dequeue();
+        }
+        return null;
+    }
+
+    public static void main(String[] args) {
+        Queue<String> students = new Queue<String>();
+        // students.enqueue("Alice");
+        // students.enqueue("Vanessa");
+        // students.enqueue("Ethan");
+        // students.enqueue("Bob");
+        // students.enqueue("Cafe");
+        // String expected = "Alice Bob Cafe Ethan Vanessa";
+        System.out.println("Sorted queue:");
+        System.out.println(MergeSort.mergeSort(students));
+        // System.out.println("Expected queue:");
+        // System.out.println(expected);
+        System.out.println("Original queue:");
+        System.out.println(students);
     }
 }
