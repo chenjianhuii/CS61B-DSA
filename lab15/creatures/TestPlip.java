@@ -6,6 +6,7 @@ import java.awt.Color;
 import huglife.Direction;
 import huglife.Action;
 import huglife.Occupant;
+import huglife.Action.ActionType;
 import huglife.Impassible;
 import huglife.Empty;
 
@@ -36,10 +37,16 @@ public class TestPlip {
 
     @Test
     public void testReplicate() {
+        double initEnergy = 0.5;
+        Plip p = new Plip(initEnergy);
+        Plip babyP = p.replicate();
+        assertNotSame(p, babyP);
+        assertEquals(initEnergy / 2, p.energy(), 0.01);
+        assertEquals(initEnergy / 2, babyP.energy(), 0.01);
 
     }
 
-    //@Test
+    @Test
     public void testChoose() {
         Plip p = new Plip(1.2);
         HashMap<Direction, Occupant> surrounded = new HashMap<Direction, Occupant>();
@@ -56,6 +63,24 @@ public class TestPlip {
         Action expected = new Action(Action.ActionType.STAY);
 
         assertEquals(expected, actual);
+
+        Plip p2 = new Plip(1.2);
+        HashMap<Direction, Occupant> surrounded2 = new HashMap<Direction, Occupant>();
+        surrounded2.put(Direction.TOP, new Empty());
+        surrounded2.put(Direction.BOTTOM, new Impassible());
+        surrounded2.put(Direction.LEFT, new Impassible());
+        surrounded2.put(Direction.RIGHT, new Impassible());
+
+        assertEquals(new Action(ActionType.REPLICATE, Direction.TOP), p2.chooseAction(surrounded2));
+
+        Plip p3 = new Plip(0.2);
+        HashMap<Direction, Occupant> surrounded3 = new HashMap<Direction, Occupant>();
+        surrounded3.put(Direction.TOP, new Empty());
+        surrounded3.put(Direction.BOTTOM, new Impassible());
+        surrounded3.put(Direction.LEFT, new Impassible());
+        surrounded3.put(Direction.RIGHT, new Impassible());
+
+        assertEquals(new Action(ActionType.STAY), p3.chooseAction(surrounded3));
     }
 
     public static void main(String[] args) {
