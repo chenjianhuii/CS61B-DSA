@@ -42,11 +42,52 @@ public class Rasterer {
      *                    forget to set this to true on success! <br>
      */
     public Map<String, Object> getMapRaster(Map<String, Double> params) {
-        // System.out.println(params);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented getMapRaster, nothing is displayed in "
-                           + "your browser.");
+        int level = getLevel(params);
+        double latPerTile = (MapServer.ROOT_ULLAT - MapServer.ROOT_LRLAT) / (1 << level);
+        double lonPerTile = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / (1 << level);
+        int xMin = findLeftBound(params.get("ullon"), MapServer.ROOT_ULLON, MapServer.ROOT_LRLON, level);
+        int yMin = findLeftBound(params.get("ullat"), MapServer.ROOT_ULLAT, MapServer.ROOT_LRLAT, level);
+        int xMax = findLeftBound(params.get("lrlon"), MapServer.ROOT_ULLON, MapServer.ROOT_LRLON, level);
+        int yMax = findLeftBound(params.get("lrlat"), MapServer.ROOT_ULLAT, MapServer.ROOT_LRLAT, level);
+        String[][] renderGrid = new String[yMax - yMin + 1][xMax - xMin + 1];
+        boolean success = false;
+        for (int i = 0; i < renderGrid.length; i++) {
+            for (int j = 0; j < renderGrid[0].length; j++) {
+                success = true;
+                renderGrid[i][j] = String.format("d%d_x%d_y%d.png", level, j + xMin, i + yMin);
+            }
+        }
+        results.put("render_grid", renderGrid);
+        results.put("raster_ul_lon", MapServer.ROOT_ULLON + xMin * lonPerTile);
+        results.put("raster_ul_lat", MapServer.ROOT_ULLAT - yMin * latPerTile);
+        results.put("raster_lr_lon", MapServer.ROOT_ULLON + (xMax + 1) * lonPerTile);
+        results.put("raster_lr_lat", MapServer.ROOT_ULLAT - (yMax + 1) * latPerTile);
+        results.put("depth", level);
+        results.put("query_success", success);
         return results;
     }
 
+
+    private int getLevel(Map<String, Double> params) {
+        double targetLonDPP = (params.get("lrlon") - params.get("ullon")) / params.get("w");
+        double rootLonDPP = (MapServer.ROOT_LRLON - MapServer.ROOT_ULLON) / MapServer.TILE_SIZE;
+        int level = 0;
+        while (level < 7 && rootLonDPP / (1 << level) - targetLonDPP > 1e-10) {
+            level++;
+        }
+        return level;
+    }
+
+    private int findLeftBound(double ul, double rootL, double rootR, int level) {
+        int tileNum = 1 << level;
+        double fraction = (ul - rootL) / (rootR - rootL);
+        if (fraction < 0) {
+            return 0;
+        }
+        if (fraction > 1) {
+            return tileNum - 1;
+        }
+        return (int) (tileNum * fraction);
+    }
 }

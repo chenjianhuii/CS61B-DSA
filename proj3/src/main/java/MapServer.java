@@ -45,12 +45,12 @@ public class MapServer {
     /** Route stroke information: Cyan with half transparency. */
     public static final Color ROUTE_STROKE_COLOR = new Color(108, 181, 230, 200);
     /** The tile images are in the IMG_ROOT folder. */
-    private static final String IMG_ROOT = "../library-sp18/data/proj3_imgs/";
+    private static final String IMG_ROOT = "../library-fa20/data/proj2d_imgs/";
     /**
      * The OSM XML file path. Downloaded from <a href="http://download.bbbike.org/osm/">here</a>
      * using custom region selection.
      **/
-    private static final String OSM_DB_PATH = "../library-sp18/data/berkeley-2018.osm.xml";
+    private static final String OSM_DB_PATH = "../library-fa20/data/proj2d_xml/berkeley-2019.osm.xml";
     /**
      * Each raster request to the server will have the following parameters
      * as keys in the params map accessible by,
@@ -63,7 +63,7 @@ public class MapServer {
         "lrlon", "w", "h"};
     /**
      * Each route request to the server will have the following parameters
-     * as keys in the params map.<br>
+     * as keys in the params map.<br>;
      * start_lat : start point latitude,<br> start_lon : start point longitude,<br>
      * end_lat : end point latitude, <br>end_lon : end point longitude.
      **/

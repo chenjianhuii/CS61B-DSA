@@ -1,5 +1,4 @@
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,6 +11,34 @@ import java.util.regex.Pattern;
  * down to the priority you use to order your vertices.
  */
 public class Router {
+
+    private static class Vertex implements Comparable<Vertex> {
+
+        long id;
+        long parent;
+        double dist;
+        double priority;
+
+        Vertex(long id, long parent, double dist, double priority) {
+            this.id = id;
+            this.parent = parent;
+            this.dist = dist;
+            this.priority = priority;
+        }
+
+        @Override
+        public int compareTo(Vertex o) {
+            double cmp = priority - o.priority;
+            if (cmp + 1e-6 < 0) {
+                return -1;
+            }
+            if (cmp - 1e-6 > 0) {
+                return 1;
+            }
+            return 0;
+        }
+    }
+
     /**
      * Return a List of longs representing the shortest path from the node
      * closest to a start location and the node closest to the destination
@@ -25,7 +52,43 @@ public class Router {
      */
     public static List<Long> shortestPath(GraphDB g, double stlon, double stlat,
                                           double destlon, double destlat) {
-        return null; // FIXME
+        PriorityQueue<Vertex> fringe = new PriorityQueue<>();
+        Map<Long, Double> best = new HashMap<>();
+        Map<Long, Long> parent = new HashMap<>();
+        for (long v: g.vertices()) {
+            best.put(v, Double.MAX_VALUE);
+            parent.put(v, -1L);
+        }
+        long start = g.closest(stlon, stlat);
+        long target = g.closest(destlon, destlat);
+        fringe.add(new Vertex(start, 0, 0.0, 0.0));
+        while (!fringe.isEmpty()) {
+            Vertex u = fringe.poll();
+            if (parent.get(u.id) == -1) {
+                parent.put(u.id, u.parent);
+                best.put(u.id, u.dist);
+                if (u.id == target) {
+                    break;
+                }
+                for (long v: g.adjacent(u.id)) {
+                    if (parent.get(v) == -1) {
+                        double newDist = u.dist + g.distance(u.id, v);
+                        if (newDist < best.get(v)) {
+                            best.put(v, newDist);
+                            fringe.add(new Vertex(v, u.id, newDist, newDist + g.distance(v, target)));
+                        }
+                    }
+                }
+            }
+        }
+        LinkedList<Long> l = new LinkedList<>();
+        long t = target;
+        while (t != start) {
+            l.addFirst(t);
+            t = parent.get(t);
+        }
+        l.addFirst(start);
+        return l;
     }
 
     /**
@@ -37,8 +100,49 @@ public class Router {
      * route.
      */
     public static List<NavigationDirection> routeDirections(GraphDB g, List<Long> route) {
-        return null; // FIXME
+        List<NavigationDirection> ln = new ArrayList<>();
+        double totalDist = 0.0;
+        NavigationDirection nd = new NavigationDirection();
+        nd.direction = NavigationDirection.START;
+        GraphDB.Edge first = g.getEdge(route.get(0), route.get(1));
+        nd.way = first.name == null ? NavigationDirection.UNKNOWN_ROAD : first.name;
+        totalDist = first.dist;
+        for (int i = 1; i < route.size() - 1; i++) {
+            GraphDB.Edge newEdge = g.getEdge(route.get(i), route.get(i + 1));
+            String newWay = newEdge.name == null ? NavigationDirection.UNKNOWN_ROAD : newEdge.name;
+            if (newWay.equals(nd.way)) {
+                totalDist += newEdge.dist;
+            } else {
+                nd.distance = totalDist;
+                ln.add(nd);
+                nd = new NavigationDirection();
+                double prevBearing = g.bearing(route.get(i - 1), route.get(i));
+                double curBearing = g.bearing(route.get(i), route.get(i + 1));
+                double relBearing = curBearing - prevBearing;
+                if (Math.abs(relBearing) < 15) {
+                    nd.direction = NavigationDirection.STRAIGHT;
+                } else if (relBearing < -15 && relBearing > -30) {
+                    nd.direction = NavigationDirection.SLIGHT_LEFT;
+                } else if (relBearing < 30 && relBearing > 15) {
+                    nd.direction = NavigationDirection.SLIGHT_RIGHT;
+                } else if (relBearing < -30 && relBearing > -100) {
+                    nd.direction = NavigationDirection.LEFT;
+                } else if (relBearing < 100 && relBearing > 30) {
+                    nd.direction = NavigationDirection.RIGHT;
+                } else if (relBearing < -100) {
+                    nd.direction = NavigationDirection.SHARP_RIGHT;
+                } else if (relBearing > 100) {
+                    nd.direction = NavigationDirection.SHARP_LEFT;
+                }
+                nd.way = newWay;
+                totalDist = newEdge.dist;
+            }
+        }
+        nd.distance = totalDist;
+        ln.add(nd);
+        return ln;
     }
+
 
 
     /**
